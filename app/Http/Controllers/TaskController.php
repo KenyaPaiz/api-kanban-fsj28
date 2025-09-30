@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,6 +13,7 @@ class TaskController extends Controller
 {
     //metodo para obtener todas las tareas
     public function index(){
+
         //SELECT t.*, u.name FROM tasks as t inner join users as u on u.id = t.user_id;
         $tasks = Task::join('users as u','u.id','=','tasks.user_id')->select('tasks.id','tasks.title','tasks.description','tasks.status','tasks.priority','tasks.due_date','tasks.user_id', 'u.name as user')->get();
 
@@ -60,7 +63,7 @@ class TaskController extends Controller
             [
                 'status' => 'nullable|in:pendiente,en proceso,completada',
                 'priority' => 'nullable|in:baja,media,alta',
-            ]);
+        ]);
 
         if($validator->fails()){
             return response()->json(['errors' => $validator->errors()], 422);
@@ -89,8 +92,7 @@ class TaskController extends Controller
         return response()->json($tasks, 200);
     }
 
-    
-    public function update(Request $request, $taskId){
+    public function update(UpdateTaskRequest $request, $taskId){
         //encontrar la tarea en base el id
         $task = Task::find($taskId);
         $task->update($request->all());
@@ -99,6 +101,22 @@ class TaskController extends Controller
 
     //devolver cuantos dias falta o si se paso del limite de la fecha
     public function remaininDays($taskId){
+        //obtener la tarea
+        $task = Task::find($taskId); //objeto
+        //obteniendo la fecha actual
+        $today = Carbon::today();
+        //clave fecha_limite 
+        $dueDate = Carbon::parse($task->due_date); //convierte a objeto de tipo Carbon
+        //obtener los dias de diferencia entre fechas (aceptamos negativos)
+        $diffDays = $today->diffInDays($dueDate, false); 
+
+        return response()->json([
+            'task_id' => $task->id,
+            'title' => $task->title,
+            'due_date' => $task->due_date,
+            'remaining_days' => $diffDays,
+            'detail' => $diffDays > 0 ? "Aun estas a tiempo" : "La tarea ya vencio!"
+        ], 200);
 
     }
 }
