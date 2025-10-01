@@ -1,0 +1,680 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Laravel V12 Kanban Task Management API - FSJ28",
+        "description": "API documentation for the Kanban task management system. Laravel 12.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "API V1 Base URL"
+        }
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "User login and token generation",
+                "description": "Authenticates the user using email and password and returns a JWT token for subsequent requests.",
+                "operationId": "d55f416d61f094eb6038b566bc6e4596",
+                "requestBody": {
+                    "description": "User credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secretpassword"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login successful. Token returned.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "type": "string",
+                                            "example": "Jane Doe"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "jane.doe@app.com"
+                                        },
+                                        "access_token": {
+                                            "description": "JWT Bearer token",
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "User logout and token revocation",
+                "description": "Revokes all tokens for the authenticated user, effectively logging them out of all devices. Requires authentication.",
+                "operationId": "7f261a1e14b78ceb6cadbe969582a855",
+                "responses": {
+                    "200": {
+                        "description": "Logged out successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (Missing or invalid token)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks": {
+            "get": {
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get all tasks with user names",
+                "description": "Retrieves a list of all tasks, including the name of the assigned user.",
+                "operationId": "6a93d54730cde509d735e538ab6800f6",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Task"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Create a new task",
+                "description": "Creates a new task in the system.",
+                "operationId": "9b481c0ed5fdfa1a592d70ba39a348ee",
+                "requestBody": {
+                    "description": "Task data for creation",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "status",
+                                    "priority",
+                                    "due_date",
+                                    "user_id"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Fix critical bug"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "The production database is failing."
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pendiente",
+                                            "en proceso",
+                                            "completada"
+                                        ],
+                                        "example": "pendiente"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "enum": [
+                                            "baja",
+                                            "media",
+                                            "alta"
+                                        ],
+                                        "example": "alta"
+                                    },
+                                    "due_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-11-15"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Task created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Task created successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/tasks/{taskId}": {
+            "get": {
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Get a specific task by ID",
+                "description": "Returns a single task object based on the provided ID.",
+                "operationId": "7359a021c9cb101106dcbcd751cf16e3",
+                "parameters": [
+                    {
+                        "name": "taskId",
+                        "in": "path",
+                        "description": "ID of the task to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Task"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error (e.g., Task ID not found)"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Update an existing task",
+                "description": "Updates an existing task by ID. Requires authentication.",
+                "operationId": "f5e08ba7dc8afb612806660af4fc36f7",
+                "parameters": [
+                    {
+                        "name": "taskId",
+                        "in": "path",
+                        "description": "ID of the task to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Fields to update (partial update supported)",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Fix critical bug (completed)"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pendiente",
+                                            "en proceso",
+                                            "completada"
+                                        ],
+                                        "example": "completada"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Task updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Task updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (Missing or invalid token)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/tasks/filter": {
+            "get": {
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Filter tasks by status or priority",
+                "description": "Returns a list of tasks filtered by optional status and/or priority query parameters.",
+                "operationId": "da811e6e390a05d45d40d35df9ee4b7e",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by task status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pendiente",
+                                "en proceso",
+                                "completada"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Filter by task priority",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "baja",
+                                "media",
+                                "alta"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Task"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "No tasks found matching the criteria"
+                    },
+                    "422": {
+                        "description": "Invalid filter parameter"
+                    }
+                }
+            }
+        },
+        "/tasks/remaining-days/{taskId}": {
+            "get": {
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "Calculate remaining days until due date",
+                "description": "Calculates the difference in days between today and the task's due date. Requires authentication.",
+                "operationId": "9283d6fc52eafbb8cfe307aea482ef8b",
+                "parameters": [
+                    {
+                        "name": "taskId",
+                        "in": "path",
+                        "description": "ID of the task",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "task_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Implement Task API"
+                                        },
+                                        "due_date": {
+                                            "type": "string",
+                                            "format": "date",
+                                            "example": "2025-10-30"
+                                        },
+                                        "remaining_days": {
+                                            "description": "Days remaining (negative if overdue)",
+                                            "type": "integer",
+                                            "example": 15
+                                        },
+                                        "detail": {
+                                            "type": "string",
+                                            "example": "Aun estas a tiempo"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (Missing or invalid token)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/users": {
+            "get": {
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get all users",
+                "description": "Retrieves a list of all system users (name, email, and ID).",
+                "operationId": "7e2f5799553ec93c9c43e2a58490d447",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/User"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/tasks": {
+            "get": {
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get tasks for authenticated user",
+                "description": "Retrieves all tasks assigned to the currently authenticated user. Requires authentication.",
+                "operationId": "66a4f5ac4b7490eb33ccbf155ea920dd",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Task"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized (Missing or invalid token)"
+                    },
+                    "404": {
+                        "description": "No tasks found for the authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "No tasks found for the authenticated user"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Task": {
+                "title": "Task",
+                "description": "Task model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Implement Task API"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Develop CRUD operations for the Task resource."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pendiente",
+                            "en proceso",
+                            "completada"
+                        ],
+                        "example": "en proceso"
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": [
+                            "baja",
+                            "media",
+                            "alta"
+                        ],
+                        "example": "alta"
+                    },
+                    "due_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-10-30"
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 5
+                    },
+                    "user": {
+                        "description": "Associated user name (only in index/list view)",
+                        "type": "string",
+                        "readOnly": "true",
+                        "example": "John Doe"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "User model (public view)",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "readOnly": "true",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Alice Johnson"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "alice@example.com"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Enter the Bearer token (JWT) returned at login.",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "authentication",
+            "description": "User login and session management"
+        },
+        {
+            "name": "tasks",
+            "description": "Operations about tasks"
+        },
+        {
+            "name": "users",
+            "description": "User management and task association"
+        }
+    ]
+}
